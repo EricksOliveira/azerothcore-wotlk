@@ -441,7 +441,7 @@ bool LootItem::AllowedForPlayer(Player const* player, ObjectGuid source) const
         return false;
 
     // QUEST RULE (real rule — NEVER bypass)
-    if (needs_quest && !player->HasQuestForItem(itemid))
+    if (needs_quest && !pProto->HasFlagCu(ITEM_FLAGS_CU_IGNORE_QUEST_STATUS) && !player->HasQuestForItem(itemid))
         return false;
 
     if (!sScriptMgr->OnAllowedForPlayerLootCheck(player, source))
