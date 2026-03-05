@@ -440,7 +440,7 @@ bool LootItem::AllowedForPlayer(Player const* player, ObjectGuid source) const
     if (pProto->Class == ITEM_CLASS_RECIPE && pProto->Bonding == BIND_WHEN_PICKED_UP && pProto->Spells[1].SpellId != 0 && player->HasSpell(pProto->Spells[1].SpellId))
         return false;
 
-    // QUEST RULE (real rule — NEVER bypass)
+    // check quest requirements
     if (needs_quest && !pProto->HasFlagCu(ITEM_FLAGS_CU_IGNORE_QUEST_STATUS) && !player->HasQuestForItem(itemid))
         return false;
 
