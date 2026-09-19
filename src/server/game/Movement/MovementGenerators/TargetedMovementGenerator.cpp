@@ -487,6 +487,14 @@ void ChaseMovementGenerator<T>::MovementInform(T* owner)
 
 //-----------------------------------------------//
 
+// Uncapped, the catch-up boost below reaches the spline limit of GetSpeed(MOVE_RUN) * 4.
+constexpr float FOLLOW_CATCHUP_MAX_MULTIPLIER = 2.f;
+
+static bool IsTargetInMotion(Unit* target)
+{
+    return !target->movespline->Finalized() || target->isMoving();
+}
+
 static float GetTargetSpeedInMotion(Unit* target)
 {
     if (!target->movespline->Finalized())
@@ -501,6 +509,10 @@ static Optional<float> GetVelocity(Unit* owner, Unit* target, G3D::Vector3 const
     if (owner->IsInCombat() || owner->IsVehicle() || owner->HasUnitFlag(UNIT_FLAG_POSSESSED))
         return speed;
 
+    // A standing target sets no pace to match: the follower keeps its own run speed.
+    if (!IsTargetInMotion(target))
+        return speed;
+
     bool isPetLike = owner->IsPet() || owner->IsGuardian() || owner->GetGUID() == target->GetCritterGUID() || owner->GetCharmerOrOwnerGUID() == target->GetGUID();
 
     // For pets/guardians/critters or creature-to-creature follow: sync with target's speed
@@ -513,7 +525,7 @@ static Optional<float> GetVelocity(Unit* owner, Unit* target, G3D::Vector3 const
             float distance = owner->GetDistance2d(dest.x, dest.y) - target->GetObjectSize() - (*speed / 2.f);
             if (distance > 0.f)
             {
-                float multiplier = 1.f + (distance / 10.f);
+                float const multiplier = std::min(1.f + (distance / 10.f), FOLLOW_CATCHUP_MAX_MULTIPLIER);
                 *speed *= multiplier;
             }
         }
