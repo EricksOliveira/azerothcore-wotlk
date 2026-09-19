@@ -509,6 +509,10 @@ static Optional<float> GetVelocity(Unit* owner, Unit* target, G3D::Vector3 const
     if (owner->IsInCombat() || owner->IsVehicle() || owner->HasUnitFlag(UNIT_FLAG_POSSESSED))
         return speed;
 
+    // Guardians without a pet bar (Mirror Image, Shaman Elementals, ...) keep their own run speed.
+    if (owner->IsGuardian() && !owner->IsControllableGuardian())
+        return speed;
+
     // A standing target sets no pace to match: the follower keeps its own run speed.
     if (!IsTargetInMotion(target))
         return speed;
